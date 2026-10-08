@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Paychannels: 45M verified payments per second, sustained, settled on Polygon.">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head><body>
+<title>Paychannels 45M</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Instrument+Sans:wght@400..700&family=Martian+Mono:wght@400..700&display=swap">
+<style>
+/* Layout concept: a night-shift clearing house. A dark hero band is the trading floor: a rolling
+   odometer reads the rate while payments stream into hubs and settle as amber roots on Polygon.
+   Below, a wide light ledger with a label rail; cobalt marks Paychannels, amber marks settlement. */
+:root {
+  --bg: #F6F7FB;
+  --surface: #ECEFF7;
+  --card: #FFFFFF;
+  --ink: #0A0F1F;
+  --ink-2: #464E66;
+  --ink-3: #79819A;
+  --line: #DCE1EC;
+  --accent: #3442F5;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E5E8FF;
+  --settle: #B86E00;
+  --settle-soft: #FFF0D4;
+  --good: #0E7A4A;
+  --bad: #B3261E;
+  --shadow: 0 1px 0 rgba(10, 15, 31, 0.04), 0 12px 32px -18px rgba(20, 30, 90, 0.28);
+
+  /* the hero band is the same dark floor in both themes */
+  --hero-bg: #050813;
+  --hero-bg-2: #0B1024;
+  --hero-ink: #EEF1FA;
+  --hero-ink-2: #98A1BB;
+  --hero-line: #1C2340;
+  --hero-accent: #8D97FF;
+  --hero-settle: #FFB547;
+
+  --f-display: "Bricolage Grotesque", "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Instrument Sans", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --t-xs: 0.72rem; --t-sm: 0.875rem; --t-md: 1rem; --t-lg: 1.2rem;
+  --t-xl: clamp(1.35rem, 1.05rem + 1vw, 1.8rem);
+  --t-2xl: clamp(1.9rem, 1.2rem + 2.6vw, 3.1rem);
+  --t-odo: clamp(2.6rem, 0.4rem + 9.6vw, 9.4rem);
+  --gutter: clamp(16px, 2.6vw, 40px);
+  --maxw: 1600px;
+  --ease: cubic-bezier(.2, .7, .1, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #080B15; --surface: #0F1428; --card: #0C1122; --ink: #E9ECF6; --ink-2: #A5ADC3; --ink-3: #727B94;
+    --line: #1E2640; --accent: #8D97FF; --accent-ink: #070A16; --accent-soft: #171D44;
+    --settle: #FFB547; --settle-soft: #2B2111; --good: #5CD39A; --bad: #F08A80;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 16px 40px -20px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #080B15; --surface: #0F1428; --card: #0C1122; --ink: #E9ECF6; --ink-2: #A5ADC3; --ink-3: #727B94;
+  --line: #1E2640; --accent: #8D97FF; --accent-ink: #070A16; --accent-soft: #171D44;
+  --settle: #FFB547; --settle-soft: #2B2111; --good: #5CD39A; --bad: #F08A80;
+  --shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 16px 40px -20px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: var(--t-md); line-height: 1.55;
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+.wrap { max-width: var(--maxw); margin-inline: auto; padding-inline: var(--gutter); }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+.label {
+  font-family: var(--f-mono); font-size: var(--t-xs); font-weight: 500; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+
+/* ================= hero ================= */
+.hero {
+  position: relative; overflow: hidden; isolation: isolate;
+  background:
+    radial-gradient(1200px 520px at 78% 30%, rgba(80, 92, 255, 0.20), transparent 60%),
+    radial-gradient(700px 300px at 85% 100%, rgba(255, 181, 71, 0.10), transparent 70%),
+    linear-gradient(180deg, var(--hero-bg), var(--hero-bg-2));
+  color: var(--hero-ink);
+  padding-block: clamp(36px, 6vw, 84px) clamp(28px, 4vw, 48px);
+}
+.hero::after { /* faint ledger grid */
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(var(--hero-line) 1px, transparent 1px), linear-gradient(90deg, var(--hero-line) 1px, transparent 1px);
+  background-size: 64px 64px; opacity: 0.35;
+  -webkit-mask-image: radial-gradient(ellipse at 70% 40%, #000 0%, transparent 70%);
+          mask-image: radial-gradient(ellipse at 70% 40%, #000 0%, transparent 70%);
+}
+#flow {
+  position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, #000 60%);
+          mask-image: linear-gradient(90deg, transparent 0%, rgba(0,0,0,.35) 30%, #000 60%);
+}
+.hero .label { color: var(--hero-ink-2); }
+.topline { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px 24px; }
+.brand { display: inline-flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--hero-accent), #4F5BFF); box-shadow: 0 0 24px rgba(141, 151, 255, .45);
+}
+.brand-mark svg { width: 18px; height: 18px; }
+.brand b { font-family: var(--f-display); font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+.live {
+  display: inline-flex; align-items: center; gap: 10px; font-family: var(--f-mono); font-size: var(--t-xs);
+  color: var(--hero-ink-2); border: 1px solid var(--hero-line); border-radius: 999px; padding: 6px 12px 6px 10px;
+  background: rgba(5, 8, 19, .5); backdrop-filter: blur(6px);
+}
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--hero-settle); box-shadow: 0 0 0 0 rgba(255, 181, 71, .6); animation: pulse 1.8s infinite; }
+@keyframes pulse { 70% { box-shadow: 0 0 0 9px rgba(255, 181, 71, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 181, 71, 0); } }
+
+/* odometer */
+.odo {
+  margin-top: clamp(26px, 4.5vw, 56px);
+  font-family: var(--f-mono); font-weight: 700; font-size: var(--t-odo); line-height: 1;
+  letter-spacing: -0.06em; display: flex; align-items: flex-end; white-space: nowrap;
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 60px rgba(141, 151, 255, .35);
+}
+.odo .d { display: inline-block; height: 1em; overflow: hidden; }
+.odo .strip { display: flex; flex-direction: column; transform: translateY(calc((var(--v) + 10) * -1em)); animation: roll 2.2s var(--ease) both; animation-delay: calc(var(--i) * 70ms); }
+.odo .strip span { height: 1em; line-height: 1; color: var(--hero-ink); }
+.odo .c { color: var(--hero-ink-2); font-weight: 400; letter-spacing: -0.14em; margin-right: 0.04em; }
+@keyframes roll { from { transform: translateY(0); } }
+.per {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-top: clamp(10px, 1.6vw, 18px);
+  font-family: var(--f-display); font-size: var(--t-xl); font-weight: 600; letter-spacing: -0.015em; color: var(--hero-accent);
+}
+.per small { font-family: var(--f-mono); font-size: var(--t-xs); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--hero-ink-2); }
+
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 28px clamp(28px, 5vw, 72px); margin-top: clamp(22px, 3vw, 34px); align-items: start; }
+.hero-grid > * { min-width: 0; }
+.lede { font-family: var(--f-display); font-size: clamp(1.25rem, 1rem + 0.9vw, 1.7rem); font-weight: 500; line-height: 1.3; letter-spacing: -0.015em; max-width: 30ch; }
+.lede em { font-style: normal; color: var(--hero-settle); background: linear-gradient(transparent 70%, rgba(255, 181, 71, .22) 70%); }
+.pills { display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0; padding: 0; list-style: none; }
+.pills li {
+  border: 1px solid var(--hero-line); border-radius: 10px; padding: 9px 14px; background: rgba(12, 18, 40, .55);
+  font-size: var(--t-sm); color: var(--hero-ink-2); backdrop-filter: blur(6px);
+}
+.pills li strong { display: block; font-family: var(--f-display); font-size: 1.25rem; color: var(--hero-ink); font-weight: 700; letter-spacing: -0.02em; line-height: 1.15; }
+
+/* versus panel: bars to one scale (45.02M = 100%) */
+.versus {
+  border: 1px solid var(--hero-line); border-radius: 14px; padding: clamp(16px, 2vw, 22px);
+  background: linear-gradient(180deg, rgba(14, 20, 44, .78), rgba(8, 12, 28, .78)); backdrop-filter: blur(10px);
+}
+.versus-h { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.versus-h .label { white-space: nowrap; }
+.versus-h h2 { font-size: var(--t-lg); font-weight: 600; letter-spacing: -0.01em; }
+.vrow { margin-top: 16px; }
+.vrow-t { display: flex; justify-content: space-between; gap: 10px; font-size: var(--t-sm); color: var(--hero-ink-2); }
+.vrow-t b { color: var(--hero-ink); font-weight: 600; }
+.vrow-t .num { font-family: var(--f-mono); font-size: var(--t-xs); white-space: nowrap; }
+.track { margin-top: 7px; height: 12px; border-radius: 6px; background: rgba(255, 255, 255, .05); overflow: hidden; }
+.bar { height: 100%; width: var(--w); border-radius: 6px; background: #4A5170; transform-origin: left; animation: grow 1.6s var(--ease) both .5s; }
+.bar.us {
+  background: linear-gradient(90deg, #4F5BFF, var(--hero-accent) 70%, #C7CCFF);
+  box-shadow: 0 0 18px rgba(141, 151, 255, .55); position: relative;
+}
+.bar.us::after { /* sustained: a sheen that keeps moving */
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); width: 30%;
+  animation: sheen 2.4s linear infinite 2.2s; transform: translateX(-120%);
+}
+@keyframes grow { from { transform: scaleX(0); } }
+@keyframes sheen { to { transform: translateX(380%); } }
+.vrow.us .vrow-t b { color: var(--hero-accent); }
+.vnote { margin-top: 14px; font-size: var(--t-xs); color: var(--hero-ink-2); font-family: var(--f-mono); line-height: 1.6; }
+
+.ticker {
+  margin-top: clamp(26px, 4vw, 44px); padding-top: 16px; border-top: 1px solid var(--hero-line);
+  display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; align-items: baseline;
+  font-family: var(--f-mono); font-size: var(--t-xs); color: var(--hero-ink-2);
+}
+.ticker output { color: var(--hero-ink); font-size: var(--t-sm); font-weight: 600; }
+.ticker .settle { color: var(--hero-settle); }
+
+/* ================= sections ================= */
+section.s { padding-block: clamp(48px, 7vw, 96px); border-bottom: 1px solid var(--line); }
+.grid { display: grid; grid-template-columns: minmax(150px, 2fr) 10fr; gap: 20px clamp(20px, 4vw, 56px); }
+.grid > * { min-width: 0; }
+.rail { padding-top: 10px; }
+.rail .label { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); }
+.rail .label::before { content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--accent); }
+.h2 { font-size: var(--t-2xl); font-weight: 700; line-height: 1.04; letter-spacing: -0.035em; max-width: 22ch; }
+.h2 mark { background: none; color: var(--accent); }
+.sub { color: var(--ink-2); font-size: var(--t-lg); margin-top: 14px; max-width: 60ch; }
+.sub strong { color: var(--ink); font-weight: 600; }
+
+/* reveal: visible at rest; JS only arms elements that start below the fold */
+[data-reveal].armed { opacity: 0; transform: translateY(18px); }
+[data-reveal].shown { opacity: 1; transform: none; transition: opacity .8s var(--ease), transform .8s var(--ease); }
+
+/* scaling charts */
+.charts { display: grid; grid-template-columns: 1.35fr 1fr; gap: clamp(16px, 2.4vw, 28px); margin-top: 30px; }
+.charts > figure { margin: 0; min-width: 0; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: clamp(16px, 2vw, 24px); box-shadow: var(--shadow); }
+figure svg { width: 100%; height: auto; display: block; }
+figcaption { font-size: var(--t-sm); color: var(--ink-2); margin-top: 10px; }
+figcaption strong { color: var(--ink); font-weight: 600; }
+.fig-t { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; margin-bottom: 10px; }
+.fig-t b { font-family: var(--f-display); font-weight: 600; font-size: var(--t-lg); letter-spacing: -0.01em; }
+.ax { font-family: var(--f-mono); font-size: 12px; fill: var(--ink-3); }
+.ax-t { font-family: var(--f-mono); font-size: 12px; fill: var(--ink-2); }
+.gridl { stroke: var(--line); stroke-width: 1; }
+.base { stroke: var(--ink-3); stroke-width: 1; }
+.ln { stroke: var(--accent); stroke-width: 3; fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.proj { stroke: var(--accent); stroke-width: 2; fill: none; stroke-dasharray: 5 7; opacity: 0.7; }
+.dot { fill: var(--card); stroke: var(--accent); stroke-width: 2.5; }
+.dot-end { fill: var(--accent); }
+.halo { fill: var(--accent); opacity: .25; transform-box: fill-box; transform-origin: center; animation: halo 2.2s ease-out infinite; }
+@keyframes halo { from { transform: scale(.6); opacity: .45; } to { transform: scale(2.6); opacity: 0; } }
+.pl { font-family: var(--f-mono); font-size: 13px; fill: var(--ink); }
+.pl-s { font-family: var(--f-mono); font-size: 12px; fill: var(--ink-3); }
+.pl-a { font-family: var(--f-display); font-weight: 700; font-size: 20px; fill: var(--accent); }
+.area { fill: url(#plateau-fill); }
+.draw { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.in-view .draw { animation: draw 1.8s var(--ease) both; }
+@keyframes draw { from { stroke-dashoffset: 1; } }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px; }
+.stat { border-top: 2px solid var(--line); padding-top: 10px; }
+.stat b { display: block; font-family: var(--f-mono); font-size: clamp(1rem, .8rem + .6vw, 1.35rem); font-weight: 600; letter-spacing: -0.03em; }
+.stat span { font-size: var(--t-xs); color: var(--ink-3); font-family: var(--f-mono); }
+.stat.us { border-top-color: var(--accent); }
+.stat.us b { color: var(--accent); }
+
+/* how it works */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; list-style: none; padding: 0; margin: 30px 0 0; }
+.steps li {
+  position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+  padding: 22px 22px 24px; box-shadow: var(--shadow); transition: transform .35s var(--ease), border-color .35s;
+}
+.steps li:hover { transform: translateY(-4px); border-color: var(--accent); }
+.steps .n {
+  display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 10px;
+  font-family: var(--f-mono); font-size: var(--t-sm); font-weight: 600; color: var(--accent); background: var(--accent-soft);
+}
+.steps li:last-child .n { color: var(--settle); background: var(--settle-soft); }
+.steps h3 { font-size: var(--t-xl); font-weight: 700; margin-top: 14px; letter-spacing: -0.025em; }
+.steps p { color: var(--ink-2); font-size: var(--t-sm); margin-top: 8px; }
+.flow { margin-top: 18px; overflow-x: auto; background: var(--surface); border-radius: 16px; padding: 14px; }
+.flow svg { min-width: 640px; width: 100%; height: auto; display: block; }
+.fbox { fill: var(--card); stroke: var(--line); }
+.fbox-a { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+.fbox-s { fill: var(--settle-soft); stroke: var(--settle); stroke-width: 1.2; }
+.ft { font-family: var(--f-display); font-weight: 700; font-size: 15px; fill: var(--ink); }
+.fs { font-family: var(--f-mono); font-size: 10px; fill: var(--ink-3); }
+.fa { stroke: var(--ink-3); stroke-width: 1.5; fill: none; }
+.fa-a { stroke: var(--accent); stroke-width: 1.5; fill: none; }
+.fa-s { stroke: var(--settle); stroke-width: 1.5; fill: none; }
+.fhead { fill: var(--ink-3); } .fhead-a { fill: var(--accent); } .fhead-s { fill: var(--settle); }
+.mover { fill: var(--accent); } .mover-s { fill: var(--settle); }
+.note {
+  margin-top: 18px; font-size: var(--t-md); color: var(--ink-2); max-width: 80ch; display: flex; gap: 12px; align-items: baseline;
+}
+.note b { color: var(--ink); font-weight: 600; }
+.tag {
+  font-family: var(--f-mono); font-size: var(--t-xs); font-weight: 600; color: var(--accent); background: var(--accent-soft);
+  border-radius: 6px; padding: 3px 8px; white-space: nowrap;
+}
+
+/* beyond channels */
+.feats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 30px; }
+.feats > div {
+  min-width: 0; padding: 20px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+  box-shadow: var(--shadow); transition: transform .35s var(--ease), border-color .35s;
+}
+.feats > div:hover { transform: translateY(-4px); border-color: var(--accent); }
+.feats .ico { width: 36px; height: 36px; border-radius: 10px; background: var(--accent-soft); display: grid; place-items: center; }
+.feats .ico svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.feats h3 { font-size: var(--t-lg); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; margin-top: 14px; }
+.feats p { color: var(--ink-2); font-size: var(--t-sm); margin-top: 8px; }
+.privacy {
+  margin-top: 18px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px clamp(20px, 3vw, 40px);
+  background: linear-gradient(135deg, var(--hero-bg), var(--hero-bg-2)); color: var(--hero-ink);
+  border-radius: 18px; padding: clamp(20px, 3vw, 34px); position: relative; overflow: hidden;
+}
+.privacy::before { content: ""; position: absolute; right: -120px; top: -120px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(141, 151, 255, .25), transparent 65%); }
+.privacy > * { min-width: 0; position: relative; }
+.privacy .label { color: var(--hero-settle); }
+.privacy h3 { font-size: var(--t-xl); font-weight: 700; line-height: 1.12; letter-spacing: -0.025em; margin-top: 8px; }
+.privacy p { color: var(--hero-ink-2); font-size: var(--t-sm); margin-top: 10px; }
+.rail-flow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; list-style: none; padding: 0; margin: 0; }
+.rail-flow li { padding: 14px; border-radius: 12px; border: 1px solid var(--hero-line); background: rgba(255, 255, 255, .03); }
+.rail-flow li:nth-child(2) { border-color: rgba(141, 151, 255, .5); background: rgba(141, 151, 255, .08); }
+.rail-flow .label { color: var(--hero-ink-2); }
+.rail-flow li:nth-child(2) .label { color: var(--hero-accent); }
+.rail-flow b { display: block; font-family: var(--f-display); font-size: var(--t-lg); margin-top: 6px; letter-spacing: -0.01em; }
+.rail-flow span { display: block; font-size: var(--t-sm); color: var(--hero-ink-2); margin-top: 4px; }
+
+/* features */
+.clusters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 30px; }
+.cl { min-width: 0; border-radius: 16px; padding: 18px 20px 20px; background: var(--surface); }
+.cl > .label { color: var(--accent); }
+.cl dl { margin: 12px 0 0; display: grid; gap: 14px; }
+.cl dt { font-family: var(--f-display); font-weight: 700; font-size: var(--t-md); letter-spacing: -0.01em; display: flex; gap: 8px; align-items: baseline; }
+.cl dt::before { content: "✓"; font-family: var(--f-mono); font-size: var(--t-xs); color: var(--good); }
+.cl dd { margin: 3px 0 0 18px; color: var(--ink-2); font-size: var(--t-sm); line-height: 1.45; }
+
+/* security */
+.hubdown {
+  margin-top: 24px; padding: clamp(18px, 2.4vw, 26px); border-radius: 16px; background: var(--settle-soft);
+  border: 1px solid color-mix(in srgb, var(--settle) 40%, transparent);
+  color: var(--ink); font-size: var(--t-lg); max-width: none; display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: start;
+}
+.hubdown .shield { width: 44px; height: 44px; border-radius: 12px; background: var(--settle); display: grid; place-items: center; }
+.hubdown .shield svg { width: 24px; height: 24px; stroke: var(--bg); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.hubdown strong { display: block; font-family: var(--f-display); font-weight: 700; font-size: var(--t-xl); letter-spacing: -0.02em; }
+.hubdown p { color: var(--ink-2); margin-top: 6px; font-size: var(--t-md); }
+.sec { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px; }
+.sec > div { padding: 18px 20px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); min-width: 0; }
+.sec .lead-sec { background: var(--accent); border-color: var(--accent); }
+.sec .lead-sec h3 { color: var(--accent-ink); font-size: var(--t-lg); }
+.sec .lead-sec p { color: var(--accent-ink); opacity: .85; }
+.sec h3 { font-size: var(--t-md); font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+.sec p { color: var(--ink-2); font-size: var(--t-sm); margin-top: 6px; }
+
+/* table */
+.tbl { overflow-x: auto; margin-top: 28px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); box-shadow: var(--shadow); }
+table { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 900px; font-size: var(--t-sm); }
+th, td { text-align: left; vertical-align: top; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+tbody tr:last-child th, tbody tr:last-child td { border-bottom: 0; }
+thead th { font-family: var(--f-display); font-weight: 700; font-size: var(--t-md); color: var(--ink); background: var(--card); letter-spacing: -0.01em; }
+thead th .label { display: block; margin-top: 3px; font-weight: 500; letter-spacing: .04em; }
+tbody th { font-weight: 600; color: var(--ink); width: 19%; background: var(--card); }
+td { color: var(--ink-2); }
+th.us, td.us { background: var(--accent-soft); color: var(--ink); font-weight: 600; border-left: 2px solid var(--accent); border-right: 2px solid var(--accent); }
+thead th.us { border-top: 2px solid var(--accent); border-radius: 12px 12px 0 0; color: var(--accent); position: relative; }
+tbody tr:last-child td.us { border-bottom: 2px solid var(--accent); }
+.badge { display: inline-block; margin-top: 6px; font-family: var(--f-mono); font-size: 0.64rem; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--accent-ink); background: var(--accent); border-radius: 5px; padding: 3px 7px; }
+td.big { font-family: var(--f-display); font-size: var(--t-lg); color: var(--accent); font-weight: 700; letter-spacing: -0.02em; }
+.y, .n, .p { font-family: var(--f-mono); font-weight: 600; margin-right: 6px; }
+.y { color: var(--good); } .n { color: var(--bad); } .p { color: var(--ink-3); }
+.tnote { font-size: var(--t-xs); color: var(--ink-3); margin-top: 12px; font-family: var(--f-mono); }
+
+/* built for */
+.for { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 30px; }
+.for > div { padding: 22px; border: 1px solid var(--line); border-radius: 16px; min-width: 0; background: var(--card); position: relative; overflow: hidden; transition: transform .35s var(--ease), border-color .35s; }
+.for > div::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--settle)); transform: scaleX(0); transform-origin: left; transition: transform .5s var(--ease); }
+.for > div:hover { transform: translateY(-4px); border-color: var(--accent); }
+.for > div:hover::after { transform: scaleX(1); }
+.for h3 { font-size: var(--t-lg); font-weight: 700; letter-spacing: -0.02em; }
+.for p { color: var(--ink-2); font-size: var(--t-sm); margin-top: 8px; }
+
+/* cta */
+.cta { padding-block: clamp(48px, 7vw, 96px); }
+.cta-card {
+  position: relative; overflow: hidden; border-radius: 22px; padding: clamp(26px, 4.5vw, 56px);
+  background: radial-gradient(600px 300px at 90% 0%, rgba(80, 92, 255, .35), transparent 70%), linear-gradient(135deg, var(--hero-bg), var(--hero-bg-2));
+  color: var(--hero-ink); display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px 40px; align-items: end;
+}
+.cta-card > * { min-width: 0; }
+.cta-card .label { color: var(--hero-settle); }
+.cta-card h2 { font-size: clamp(2.2rem, 1.3rem + 3.6vw, 4.4rem); font-weight: 800; letter-spacing: -0.045em; line-height: .98; margin-top: 10px; }
+.cta-card p.sub { color: var(--hero-ink-2); }
+.cta-row { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.btn {
+  display: inline-flex; align-items: center; gap: 12px; text-decoration: none;
+  background: var(--hero-accent); color: #070A16; font-family: var(--f-display); font-weight: 700;
+  font-size: var(--t-lg); padding: 15px 26px; border-radius: 12px; box-shadow: 0 10px 30px -8px rgba(141, 151, 255, .7);
+  transition: transform .25s var(--ease), box-shadow .25s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -8px rgba(141, 151, 255, .9); }
+.btn .arr { transition: transform .25s var(--ease); }
+.btn:hover .arr { transform: translateX(4px); }
+.mail { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; color: var(--hero-ink-2); font-size: var(--t-md); }
+.mail code {
+  font-family: var(--f-mono); font-size: var(--t-sm); color: var(--hero-ink); user-select: all;
+  border: 1px solid var(--hero-line); padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, .04);
+}
+.copy {
+  font: 600 var(--t-sm) var(--f-body); color: var(--hero-ink); background: transparent; cursor: pointer;
+  border: 1px solid var(--hero-ink-2); border-radius: 8px; padding: 8px 12px;
+}
+.copy:hover { border-color: var(--hero-ink); }
+.proof { padding-block: 20px 34px; font-family: var(--f-mono); font-size: var(--t-xs); color: var(--ink-3); }
+
+/* ================= responsive ================= */
+@media (max-width: 1060px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .feats, .clusters, .for { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; }
+  .rail { padding-top: 0; }
+  .charts, .privacy, .cta-card { grid-template-columns: 1fr; }
+  .sec { grid-template-columns: repeat(2, 1fr); }
+  .steps { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .odo { letter-spacing: -0.07em; }
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+  .feats, .clusters, .for, .sec, .rail-flow { grid-template-columns: 1fr; }
+  .flow { display: none; }
+  #flow { opacity: .55; }
+  tbody th, thead th:first-child { position: sticky; left: 0; z-index: 1; box-shadow: 1px 0 0 var(--line); }
+  tbody th { width: 36vw; }
+  .hubdown { grid-template-columns: 1fr; }
+  .pills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .pills li { padding: 8px 10px; font-size: var(--t-xs); line-height: 1.35; }
+  .pills li strong { font-size: 1.05rem; }
+  .vrow-t { flex-direction: column; gap: 2px; }
+  .vrow-t .num { white-space: normal; }
+  .versus-h h2 { font-size: var(--t-md); }
+  .sc .ax, .sc .ax-t { font-size: 18px; }
+  .sc .pl { font-size: 19px; }
+  .sc .pl-s, .sc .pl-a { display: none; } /* the stat row below carries these values on phones */
+  .ticker { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  [data-reveal].armed { opacity: 1; transform: none; }
+  .mover, .mover-s { display: none; }
+}
+</style>
+
+<header class="hero">
+  <canvas id="flow" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div class="topline">
+      <span class="brand">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#070A16" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h12M4 16h12"/><path d="M14 5l4 3-4 3M14 13l4 3-4 3"/></svg></span>
+        <b>Paychannels</b>
+      </span>
+      <span class="live"><span class="pulse" aria-hidden="true"></span>Measured 2026-10-08 · 100 hubs</span>
+    </div>
+
+    <h1 class="odo" aria-label="45,017,796 payments per second">
+      <span aria-hidden="true" style="display:contents">
+        <span class="d"><span class="strip" style="--v:4;--i:0"></span></span><span class="d"><span class="strip" style="--v:5;--i:1"></span></span><span class="c">,</span><span class="d"><span class="strip" style="--v:0;--i:2"></span></span><span class="d"><span class="strip" style="--v:1;--i:3"></span></span><span class="d"><span class="strip" style="--v:7;--i:4"></span></span><span class="c">,</span><span class="d"><span class="strip" style="--v:7;--i:5"></span></span><span class="d"><span class="strip" style="--v:9;--i:6"></span></span><span class="d"><span class="strip" style="--v:6;--i:7"></span></span>
+      </span>
+    </h1>
+    <p class="per">payments per second <small>sustained, not a peak</small></p>
+
+    <div class="hero-grid">
+      <div>
+        <p class="lede">Every payment signature-verified. <em>Settled on Polygon.</em> Sustained TPS.</p>
+        <ul class="pills">
+          <li><strong>27 billion</strong>payments in one run</li>
+          <li><strong>100</strong>commodity servers</li>
+          <li><strong>$0</strong>gas per payment</li>
+        </ul>
+      </div>
+      <div class="versus" aria-label="Verified payments per second, to scale">
+        <div class="versus-h"><h2>Payments per second, to scale</h2><span class="label">0 → 45M</span></div>
+        <div class="vrow us">
+          <div class="vrow-t"><b>Paychannels</b><span class="num">45.0M · sustained</span></div>
+          <div class="track"><div class="bar us" style="--w:100%"></div></div>
+        </div>
+        <div class="vrow">
+          <div class="vrow-t"><b>Sui tunnels</b><span class="num">40.6M · peak, duration not published</span></div>
+          <div class="track"><div class="bar" style="--w:90.2%"></div></div>
+        </div>
+        <div class="vrow">
+          <div class="vrow-t"><b>Solana payment channels</b><span class="num">1M+</span></div>
+          <div class="track"><div class="bar" style="--w:2.2%"></div></div>
+        </div>
+        <p class="vnote">We sustained 45M, checked every single signature, and published the hardware.</p>
+      </div>
+    </div>
+
+    <div class="ticker">
+      <span>Since you opened this page: <output id="since" class="num">0</output> payments at this rate</span>
+      <span class="settle">● 1 attested root per hub per epoch on Polygon</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">Scaling</span></div>
+      <div>
+        <h2 class="h2">Add a server. Add <mark>450,000 payments</mark> a second.</h2>
+        <p class="sub">Hubs share nothing, so throughput grows in a straight line. <strong>No shared bottleneck, no ceiling.</strong></p>
+        <div class="charts">
+          <figure data-reveal>
+            <div class="fig-t"><b>Hubs vs. verified payments per second</b><span class="label">measured</span></div>
+            <svg class="sc" viewBox="0 0 640 348" role="img" aria-label="Line chart: 1 hub 450 thousand per second, 6 hubs 2.71 million, 25 hubs 11.1 million, 100 hubs 45.0 million; dashed projection to 225 hubs at 100 million.">
+              <g>
+                <line class="gridl" x1="60" x2="600" y1="235.1" y2="235.1"/>
+                <line class="gridl" x1="60" x2="600" y1="174.2" y2="174.2"/>
+                <line class="gridl" x1="60" x2="600" y1="113.3" y2="113.3"/>
+                <line class="gridl" x1="60" x2="600" y1="52.4" y2="52.4"/>
+                <line class="base" x1="60" x2="600" y1="296" y2="296"/>
+              </g>
+              <g class="ax" text-anchor="end">
+                <text x="52" y="300">0</text>
+                <text x="52" y="239">25M</text>
+                <text x="52" y="178">50M</text>
+                <text x="52" y="117">75M</text>
+                <text x="52" y="56">100M</text>
+              </g>
+              <g class="ax" text-anchor="middle">
+                <text x="60" y="316">0</text>
+                <text x="172.5" y="316">50</text>
+                <text x="285" y="316">100</text>
+                <text x="397.5" y="316">150</text>
+                <text x="510" y="316">200</text>
+                <text class="ax-t" x="330" y="338">hubs (one 16-vCPU cloud server each)</text>
+              </g>
+              <path class="proj" d="M285,186.3 L566.2,49.2"/>
+              <path class="ln draw" pathLength="1" d="M62.2,294.9 L73.5,289.4 L116.2,269 L285,186.3"/>
+              <circle class="dot" cx="62.2" cy="294.9" r="4"/>
+              <circle class="dot" cx="73.5" cy="289.4" r="4"/>
+              <circle class="dot" cx="116.2" cy="269" r="4"/>
+              <circle class="halo" cx="285" cy="186.3" r="7"/>
+              <circle class="dot-end" cx="285" cy="186.3" r="7"/>
+              <circle class="dot" cx="566.2" cy="49.2" r="4" style="stroke-dasharray:3 3"/>
+              <text class="pl-s" x="128" y="290">25 hubs · 11.1M</text>
+              <text class="pl-a" x="270" y="166" text-anchor="end">100 hubs · 45.0M/s</text>
+              <text class="pl" x="556" y="40" text-anchor="end">225 hubs → 100M/s</text>
+            </svg>
+            <div class="stat-row num">
+              <div class="stat"><b>0.45M</b><span>1 hub</span></div>
+              <div class="stat"><b>2.71M</b><span>6 hubs</span></div>
+              <div class="stat"><b>11.1M</b><span>25 hubs</span></div>
+              <div class="stat us"><b>45.0M</b><span>100 hubs</span></div>
+            </div>
+          </figure>
+          <figure data-reveal>
+            <div class="fig-t"><b>The 600-second run</b><span class="label">every 5 s</span></div>
+            <svg viewBox="0 0 400 240" role="img" aria-label="Fleet throughput every 5 seconds for 600 seconds, flat between 42.6 and 46.4 million per second, averaging 45.0 million.">
+              <defs>
+                <linearGradient id="plateau-fill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stop-color="var(--accent)" stop-opacity=".28"/>
+                  <stop offset="1" stop-color="var(--accent)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <line class="gridl" x1="46" x2="388" y1="161.2" y2="161.2"/><line class="gridl" x1="46" x2="388" y1="126.4" y2="126.4"/><line class="gridl" x1="46" x2="388" y1="91.6" y2="91.6"/><line class="gridl" x1="46" x2="388" y1="56.8" y2="56.8"/><line class="gridl" x1="46" x2="388" y1="22.0" y2="22.0"/><line class="base" x1="46" x2="388" y1="196" y2="196"/>
+              <g class="ax" text-anchor="end"><text x="38" y="201.0">0</text><text x="38" y="131.4">20M</text><text x="38" y="61.8">40M</text></g>
+              <g class="ax" text-anchor="middle"><text x="46.0" y="218">0</text><text x="160.0" y="218">200</text><text x="274.0" y="218">400</text><text x="388.0" y="218">600 s</text></g>
+              <path class="area" d="M51.7,38.8 L54.5,39.6 L57.4,39.7 L60.2,36.1 L63.1,46.7 L66.0,36.3 L68.8,38.8 L71.7,39.1 L74.5,38.1 L77.3,46.1 L80.2,36.2 L83.0,41.4 L85.9,40.6 L88.8,38.5 L91.6,44.6 L94.5,35.7 L97.3,41.6 L100.2,40.7 L103.0,38.5 L105.8,42.3 L108.7,34.6 L111.5,43.5 L114.4,39.9 L117.2,38.1 L120.1,41.3 L123.0,36.2 L125.8,45.0 L128.7,40.6 L131.5,38.3 L134.3,40.5 L137.2,36.6 L140.1,44.8 L142.9,39.7 L145.8,38.4 L148.6,41.4 L151.4,38.9 L154.3,46.3 L157.2,39.8 L160.0,38.8 L162.8,40.7 L165.7,37.3 L168.6,47.6 L171.4,38.8 L174.2,38.2 L177.1,40.1 L179.9,38.3 L182.8,44.0 L185.7,38.6 L188.5,39.1 L191.3,39.8 L194.2,37.0 L197.1,41.1 L199.9,37.2 L202.8,41.2 L205.6,39.3 L208.4,38.2 L211.3,40.4 L214.2,37.2 L217.0,41.5 L219.8,39.1 L222.7,37.2 L225.6,40.1 L228.4,36.2 L231.2,40.4 L234.1,37.7 L236.9,37.4 L239.8,38.1 L242.7,37.1 L245.5,42.0 L248.3,37.3 L251.2,37.9 L254.1,38.4 L256.9,35.3 L259.8,40.2 L262.6,36.2 L265.4,37.7 L268.3,37.7 L271.1,35.3 L274.0,38.9 L276.9,36.8 L279.7,39.9 L282.6,37.3 L285.4,35.3 L288.2,38.0 L291.1,36.5 L293.9,41.9 L296.8,38.1 L299.6,36.0 L302.5,36.8 L305.4,36.5 L308.2,42.9 L311.1,38.0 L313.9,36.2 L316.8,38.2 L319.6,37.5 L322.4,45.4 L325.3,39.5 L328.1,37.8 L331.0,37.6 L333.9,37.3 L336.7,45.0 L339.6,39.5 L342.4,37.4 L345.2,38.1 L348.1,37.4 L350.9,43.3 L353.8,40.3 L356.6,40.6 L359.5,38.1 L362.4,36.9 L365.2,40.5 L368.1,38.0 L370.9,41.9 L373.8,37.4 L376.6,37.0 L379.4,41.0 L382.3,38.1 L385.1,41.9 L385.1,196 L51.7,196 Z"/>
+              <path class="ln draw" pathLength="1" style="stroke-width:2" d="M51.7,38.8 L54.5,39.6 L57.4,39.7 L60.2,36.1 L63.1,46.7 L66.0,36.3 L68.8,38.8 L71.7,39.1 L74.5,38.1 L77.3,46.1 L80.2,36.2 L83.0,41.4 L85.9,40.6 L88.8,38.5 L91.6,44.6 L94.5,35.7 L97.3,41.6 L100.2,40.7 L103.0,38.5 L105.8,42.3 L108.7,34.6 L111.5,43.5 L114.4,39.9 L117.2,38.1 L120.1,41.3 L123.0,36.2 L125.8,45.0 L128.7,40.6 L131.5,38.3 L134.3,40.5 L137.2,36.6 L140.1,44.8 L142.9,39.7 L145.8,38.4 L148.6,41.4 L151.4,38.9 L154.3,46.3 L157.2,39.8 L160.0,38.8 L162.8,40.7 L165.7,37.3 L168.6,47.6 L171.4,38.8 L174.2,38.2 L177.1,40.1 L179.9,38.3 L182.8,44.0 L185.7,38.6 L188.5,39.1 L191.3,39.8 L194.2,37.0 L197.1,41.1 L199.9,37.2 L202.8,41.2 L205.6,39.3 L208.4,38.2 L211.3,40.4 L214.2,37.2 L217.0,41.5 L219.8,39.1 L222.7,37.2 L225.6,40.1 L228.4,36.2 L231.2,40.4 L234.1,37.7 L236.9,37.4 L239.8,38.1 L242.7,37.1 L245.5,42.0 L248.3,37.3 L251.2,37.9 L254.1,38.4 L256.9,35.3 L259.8,40.2 L262.6,36.2 L265.4,37.7 L268.3,37.7 L271.1,35.3 L274.0,38.9 L276.9,36.8 L279.7,39.9 L282.6,37.3 L285.4,35.3 L288.2,38.0 L291.1,36.5 L293.9,41.9 L296.8,38.1 L299.6,36.0 L302.5,36.8 L305.4,36.5 L308.2,42.9 L311.1,38.0 L313.9,36.2 L316.8,38.2 L319.6,37.5 L322.4,45.4 L325.3,39.5 L328.1,37.8 L331.0,37.6 L333.9,37.3 L336.7,45.0 L339.6,39.5 L342.4,37.4 L345.2,38.1 L348.1,37.4 L350.9,43.3 L353.8,40.3 L356.6,40.6 L359.5,38.1 L362.4,36.9 L365.2,40.5 L368.1,38.0 L370.9,41.9 L373.8,37.4 L376.6,37.0 L379.4,41.0 L382.3,38.1 L385.1,41.9"/>
+              <circle class="halo" cx="385.1" cy="41.9" r="5"/>
+              <circle class="dot-end" cx="385.1" cy="41.9" r="5"/>
+              <text class="pl-a" x="217" y="110" text-anchor="middle">45.0M/s average</text>
+              <text class="pl-s" x="217" y="132" text-anchor="middle">every 5 s sample above 42M</text>
+            </svg>
+            <figcaption><strong>A plateau, not a peak.</strong> Fleet throughput every 5 seconds for the full 10 minutes.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">How it works</span></div>
+      <div>
+        <h2 class="h2">Deposit once. Pay anyone. <mark>Settle on Polygon.</mark></h2>
+        <ol class="steps">
+          <li data-reveal>
+            <span class="n">1</span>
+            <h3>Deposit once</h3>
+            <p>Put stablecoins (USDC or USDT style) into the Paychannels contract on Polygon. That deposit is your account for as long as you want it.</p>
+          </li>
+          <li data-reveal>
+            <span class="n">2</span>
+            <h3>Pay anyone on the hub</h3>
+            <p>Each payment is one signed message. The hub verifies it in microseconds and moves the balance. No gas, and no channel per recipient.</p>
+          </li>
+          <li data-reveal>
+            <span class="n">3</span>
+            <h3>Settle and withdraw</h3>
+            <p>Each epoch the hub posts one root covering every balance. Independent verifiers re-check every signature and every sum and co-sign it first. Withdraw against it any time.</p>
+          </li>
+        </ol>
+        <div class="flow" aria-hidden="true">
+          <svg viewBox="0 0 760 124">
+            <defs>
+              <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="fhead" d="M0,0 L10,5 L0,10 Z"/></marker>
+              <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="fhead-a" d="M0,0 L10,5 L0,10 Z"/></marker>
+              <marker id="ahs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="fhead-s" d="M0,0 L10,5 L0,10 Z"/></marker>
+            </defs>
+            <rect class="fbox" x="4" y="32" width="150" height="60" rx="10"/>
+            <text class="ft" x="79" y="58" text-anchor="middle">Payer account</text>
+            <text class="fs" x="79" y="76" text-anchor="middle">one deposit</text>
+            <rect class="fbox-a" x="250" y="16" width="230" height="92" rx="12"/>
+            <text class="ft" x="365" y="46" text-anchor="middle">Hub</text>
+            <text class="fs" x="365" y="66" text-anchor="middle">verify signature · move balance</text>
+            <text class="fs" x="365" y="84" text-anchor="middle">write to disk · 450k/s per server</text>
+            <rect class="fbox" x="606" y="4" width="150" height="50" rx="10"/>
+            <text class="ft" x="681" y="26" text-anchor="middle">Any merchant</text>
+            <text class="fs" x="681" y="42" text-anchor="middle">or agent on the hub</text>
+            <rect class="fbox-s" x="606" y="70" width="150" height="50" rx="10"/>
+            <text class="ft" x="681" y="92" text-anchor="middle">Polygon</text>
+            <text class="fs" x="681" y="108" text-anchor="middle">1 attested root / epoch</text>
+            <path id="p1" class="fa-a" d="M156,62 L246,62" marker-end="url(#aha)"/>
+            <text class="fs" x="201" y="54" text-anchor="middle">signed payment</text>
+            <path id="p2" class="fa-a" d="M482,46 L602,30" marker-end="url(#aha)"/>
+            <text class="fs" x="540" y="30" text-anchor="middle">credited</text>
+            <path id="p3" class="fa-s" d="M482,82 L602,94" marker-end="url(#ahs)"/>
+            <text class="fs" x="540" y="106" text-anchor="middle">verifiers co-sign</text>
+            <circle class="mover" r="4"><animateMotion dur="1.1s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+            <circle class="mover" r="4"><animateMotion dur="1.1s" begin="0.55s" repeatCount="indefinite"><mpath href="#p1"/></animateMotion></circle>
+            <circle class="mover" r="4"><animateMotion dur="1.1s" begin="0.3s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+            <circle class="mover" r="4"><animateMotion dur="1.1s" begin="0.85s" repeatCount="indefinite"><mpath href="#p2"/></animateMotion></circle>
+            <rect class="mover-s" width="8" height="8" x="-4" y="-4" rx="1.5"><animateMotion dur="3.2s" repeatCount="indefinite"><mpath href="#p3"/></animateMotion></rect>
+          </svg>
+        </div>
+        <p class="note"><span class="tag">x402-native</span><span>Paychannels speaks x402, the HTTP 402 Payment Required standard, so any API can charge an AI agent per request.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">Beyond channels</span></div>
+      <div>
+        <h2 class="h2">Payment channels, <mark>minus the channel overhead.</mark></h2>
+        <p class="sub">Classic channels make you open, fund, watch and close a pipe for every counterparty. <strong>Paychannels is really a specialized payments L2, not just payment channels:</strong> one account that pays everyone.</p>
+        <div class="feats">
+          <div data-reveal>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span>
+            <h3>Long-lived accounts</h3>
+            <p>Deposit once and keep paying for as long as you like. No channel to open and close again and again, and no on-chain setup or teardown per session.</p>
+          </div>
+          <div data-reveal>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><circle cx="4.5" cy="6" r="1.8"/><circle cx="19.5" cy="6" r="1.8"/><circle cx="4.5" cy="18" r="1.8"/><circle cx="19.5" cy="18" r="1.8"/><path d="M6 7l4 3.5M18 7l-4 3.5M6 17l4-3.5M18 17l-4-3.5"/></svg></span>
+            <h3>Multi-party by default</h3>
+            <p>One account pays any merchant or agent on the hub and receives from anyone. No pairwise channels, no routing, no liquidity stuck with one counterparty.</p>
+          </div>
+          <div data-reveal>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="9.5" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></svg></span>
+            <h3>Private by design</h3>
+            <p>Payments never touch the chain and balances in every root are blinded. The public sees one root per hub per epoch. Not who paid whom, how much, or what anyone holds.</p>
+          </div>
+          <div data-reveal>
+            <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/></svg></span>
+            <h3>The hub keeps the books</h3>
+            <p>Balances, history, signatures and settlement proofs live with the hub and get checked by independent verifiers. Users don't run nodes, store channel state, watch the chain or handle disputes.</p>
+          </div>
+        </div>
+        <div class="privacy" data-reveal>
+          <div>
+            <span class="label">End-to-end privacy</span>
+            <h3>From bank to payment to bank, with no public trail.</h3>
+            <p>Pair Paychannels with Polygon's Open Money Stack, the compliant fiat on-ramp and off-ramp for USDC on Polygon. Reading any account takes its owner's signature.</p>
+          </div>
+          <ol class="rail-flow">
+            <li><span class="label">In</span><b>Cash or bank</b><span>Cash at 50,000+ retail locations, or a bank transfer, into USDC via Polygon OMS.</span></li>
+            <li><span class="label">Pay</span><b>Inside Paychannels</b><span>Private payments at 45M a second. No public record of who paid whom.</span></li>
+            <li><span class="label">Out</span><b>Back to a bank</b><span>Withdraw to Polygon and pay out to a bank account through OMS.</span></li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">Features</span></div>
+      <div>
+        <h2 class="h2">Shipped and <mark>running today.</mark></h2>
+        <div class="clusters">
+          <div class="cl" data-reveal>
+            <p class="label">Agents &amp; developers</p>
+            <dl>
+              <div><dt>x402-native</dt><dd>The API answers 402, the agent pays and retries. The facilitator speaks x402.</dd></div>
+              <div><dt>Session keys</dt><dd>Agents get their own keys and the owner's key stays cold. A session key can only send funds back to its owner.</dd></div>
+              <div><dt>Agent self-onboarding</dt><dd>SKILL.md, llms.txt and a paying guide teach an AI agent to pay on its own.</dd></div>
+              <div><dt>Metered &amp; streaming pricing</dt><dd>Per call, per token or per second. The price can change on every request.</dd></div>
+            </dl>
+          </div>
+          <div class="cl" data-reveal>
+            <p class="label">Payments</p>
+            <dl>
+              <div><dt>True micropayments</dt><dd>Down to the token's smallest unit. No fee ever makes a tiny payment uneconomic.</dd></div>
+              <div><dt>Instant confirmation</dt><dd>Verified and final at the hub in milliseconds. No block to wait for.</dd></div>
+              <div><dt>Instant withdrawals</dt><dd>Verifier-signed cash-out. No challenge period, no waiting window.</dd></div>
+              <div><dt>Automatic merchant payouts</dt><dd>Earnings sweep to the merchant's wallet on a schedule.</dd></div>
+            </dl>
+          </div>
+          <div class="cl" data-reveal>
+            <p class="label">Trust &amp; economics</p>
+            <dl>
+              <div><dt>Non-custodial</dt><dd>Funds sit in a Polygon contract. Every payout needs the independent verifier quorum.</dd></div>
+              <div><dt>Dead-hub recovery</dt><dd>If a hub goes offline, the verifiers can still pay everyone out.</dd></div>
+              <div><dt>Commodity hardware</dt><dd>$0.15 of ordinary cloud servers per billion payments.</dd></div>
+              <div><dt>Gasless onboarding</dt><dd>Deposits can be relayed. Users hold stablecoins only, never a gas token.</dd></div>
+            </dl>
+          </div>
+          <div class="cl" data-reveal>
+            <p class="label">Ecosystem</p>
+            <dl>
+              <div><dt>Any EVM wallet</dt><dd>Standard Ethereum wallets pay with EIP-712 signatures. Fast Ed25519 keys are optional.</dd></div>
+              <div><dt>Zero-setup receiving</dt><dd>A new account can receive and spend inside the hub with no on-chain registration or transaction.</dd></div>
+              <div><dt>Compliance-ready privacy</dt><dd>Private from the public, auditable by the operator and verifiers. Fits regulated rails like OMS.</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">Security</span></div>
+      <div>
+        <h2 class="h2">Your money <mark>stays yours.</mark></h2>
+        <div class="hubdown" data-reveal>
+          <span class="shield" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></span>
+          <div>
+            <strong>Hub down? Withdraw anyway.</strong>
+            <p>The independent verifiers hold a verified copy of every balance. A quorum of them signs a final root from it, anyone can post that root on Polygon, and you withdraw against it. No hub required.</p>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="lead-sec" data-reveal>
+            <h3>The operator can't take your money.</h3>
+            <p>No payout without a root co-signed by a threshold of independent verifiers. They re-check every payment signature and every balance before they sign.</p>
+          </div>
+          <div data-reveal>
+            <h3>Funds sit in a contract on Polygon</h3>
+            <p>Never with the operator. Withdrawals are self-service against attested roots.</p>
+          </div>
+          <div data-reveal>
+            <h3>Every payment signed by its payer</h3>
+            <p>Ed25519 signatures. Nobody can forge or alter a payment, and amounts are cumulative, so a replay charges nothing.</p>
+          </div>
+          <div data-reveal>
+            <h3>On disk before it counts</h3>
+            <p>Each payment is written to the hub's journal before it counts toward any balance or benchmark.</p>
+          </div>
+          <div data-reveal>
+            <h3>Instant, self-service withdrawals</h3>
+            <p>Request on Polygon, claim against an attested root. No challenge period.</p>
+          </div>
+          <div data-reveal>
+            <h3>No public trail</h3>
+            <p>Blinded balances on-chain. Reading an account's balance or history requires the owner's own signature.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">Compared</span></div>
+      <div>
+        <h2 class="h2">The highest <mark>fully verified</mark> payment rate anyone has published.</h2>
+        <div class="tbl" role="region" aria-label="Comparison table" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col"></th>
+                <th scope="col" class="us">Paychannels<span class="label">payment channels</span></th>
+                <th scope="col">Sui tunnels<span class="label">payment channels</span></th>
+                <th scope="col">Solana payment channels</th>
+                <th scope="col">Lightning Network</th>
+                <th scope="col">Blockchains &amp; L2s</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Throughput</th>
+                <td class="us big num">45.0M/s<br><span class="badge">held for 10 minutes</span></td>
+                <td class="num">40.6M/s peak, duration not published</td>
+                <td class="num">1M+/s</td>
+                <td class="num">≈2/s average (5.2M payments in Nov 2025)</td>
+                <td class="num">Live: Solana ≈1,800/s · Base ≈130 · Polygon PoS ≈65 · Ethereum ≈22</td>
+              </tr>
+              <tr>
+                <th scope="row">Hardware published</th>
+                <td class="us"><span class="y">✓</span>100 × 16 vCPU</td>
+                <td><span class="n">✗</span>Not disclosed</td>
+                <td><span class="n">✗</span>Not disclosed</td>
+                <td><span class="p">–</span></td>
+                <td><span class="p">–</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Every payment signature-verified and on disk</th>
+                <td class="us"><span class="y">✓</span>All 27 billion</td>
+                <td><span class="p">?</span>Not disclosed</td>
+                <td><span class="p">?</span>Not disclosed</td>
+                <td><span class="y">✓</span></td>
+                <td><span class="y">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Gas per payment</th>
+                <td class="us"><span class="y">✓</span>$0</td>
+                <td><span class="y">✓</span>$0 inside a tunnel</td>
+                <td><span class="y">✓</span>$0 inside a channel</td>
+                <td><span class="n">✗</span>Routing fees</td>
+                <td><span class="n">✗</span>Fee on every transaction</td>
+              </tr>
+              <tr>
+                <th scope="row">Long-lived account, no open and close</th>
+                <td class="us"><span class="y">✓</span>Deposit once</td>
+                <td><span class="n">✗</span>Open and close on-chain per tunnel</td>
+                <td><span class="n">✗</span>Escrow per channel, settle to close</td>
+                <td><span class="n">✗</span>Open and close on-chain per channel</td>
+                <td><span class="y">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">One deposit pays anyone</th>
+                <td class="us"><span class="y">✓</span>Anyone on the hub</td>
+                <td><span class="n">✗</span>Two-party tunnels</td>
+                <td><span class="n">✗</span>Recipients committed at open</td>
+                <td><span class="p">~</span>Via routing, liquidity per channel</td>
+                <td><span class="y">✓</span>Paying gas each time</td>
+              </tr>
+              <tr>
+                <th scope="row">Users keep no channel state</th>
+                <td class="us"><span class="y">✓</span>Hub keeps it, verifiers check it</td>
+                <td><span class="n">✗</span>Both parties co-sign state</td>
+                <td><span class="n">✗</span>Payer and operator track vouchers</td>
+                <td><span class="n">✗</span>Run a node, watch the chain</td>
+                <td><span class="y">✓</span></td>
+              </tr>
+              <tr>
+                <th scope="row">Private balances &amp; payments</th>
+                <td class="us"><span class="y">✓</span>Blinded on-chain</td>
+                <td><span class="p">~</span>Only inside a tunnel</td>
+                <td><span class="p">~</span>Only inside a channel</td>
+                <td><span class="p">~</span>Channels are public</td>
+                <td><span class="n">✗</span>Every transfer public</td>
+              </tr>
+              <tr>
+                <th scope="row">Settles to</th>
+                <td class="us">Polygon</td>
+                <td>Sui</td>
+                <td>Solana</td>
+                <td>Bitcoin</td>
+                <td>Itself or Ethereum</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="tnote">Blockchain figures: live 1-hour rates on chainspect.app, 8 Oct 2026.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s">
+    <div class="wrap grid">
+      <div class="rail"><span class="label">Built for</span></div>
+      <div>
+        <h2 class="h2">One account. <mark>Every payment the internet needs.</mark></h2>
+        <div class="for">
+          <div data-reveal>
+            <h3>AI agents</h3>
+            <p>Fund an agent once and it pays every API it calls, per request, over x402. No gas, no channel per vendor, no state to babysit.</p>
+          </div>
+          <div data-reveal>
+            <h3>Merchants &amp; APIs</h3>
+            <p>Charge per call or per second. Any customer on the hub can pay you from the account they already hold. No card fees. Payouts on Polygon whenever you want them.</p>
+          </div>
+          <div data-reveal>
+            <h3>Chains &amp; ecosystems</h3>
+            <p>Internet-scale payment volume that settles on-chain as one attested root per hub per epoch. Private by default, compliant on and off ramps.</p>
+          </div>
+          <div data-reveal>
+            <h3>Investors</h3>
+            <p>$0.15 of servers per billion payments, zero gas, and throughput that grew in a straight line from 1 to 100 servers.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="wrap">
+      <div class="cta-card">
+        <div>
+          <span class="label">Next</span>
+          <h2>See it run.</h2>
+          <p class="sub">Try the live demo, or get in touch.</p>
+        </div>
+        <div class="cta-row">
+          <a class="btn" href="https://paychannels.mudit.blog" target="_blank" rel="noopener">Try it live <span class="arr" aria-hidden="true">→</span></a>
+          <span class="mail">Talk to us <code id="email">mudit@polygon.technology</code><button class="copy" id="copy" type="button">Copy email</button></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap proof num">Measured 2026-10-08 · 100 × 16-vCPU cloud servers · 600 s · Ed25519 signature per payment · durable</footer>
+</main>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // odometer strips: 0-9 twice, final digit lands in the second set
+  document.querySelectorAll('.odo .strip').forEach(function (s) {
+    var html = '';
+    for (var k = 0; k < 20; k++) html += '<span>' + (k % 10) + '</span>';
+    s.innerHTML = html;
+  });
+
+  // copy email
+  var btn = document.getElementById('copy');
+  var code = document.getElementById('email');
+  function selectIt() {
+    try { var r = document.createRange(); r.selectNodeContents(code); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) {}
+  }
+  btn.addEventListener('click', function () {
+    var text = code.textContent.trim();
+    var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy email'; }, 1800); };
+    try {
+      navigator.clipboard.writeText(text).then(done, function () { selectIt(); btn.textContent = 'Press ⌘C / Ctrl+C'; });
+    } catch (e) { selectIt(); btn.textContent = 'Press ⌘C / Ctrl+C'; }
+  });
+
+  // running tally at the measured rate (the headline number itself never moves)
+  var out = document.getElementById('since');
+  var rate = 45017796, t0 = performance.now();
+  var fmt = new Intl.NumberFormat('en-US');
+  function tick() {
+    out.textContent = fmt.format(Math.floor((performance.now() - t0) / 1000 * rate));
+    if (!reduce) requestAnimationFrame(tick);
+  }
+  if (reduce) setInterval(tick, 1000); else requestAnimationFrame(tick);
+
+  // reveal: only elements that start below the fold get armed, so the first frame is complete
+  if (!reduce && 'IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('shown'); e.target.classList.add('in-view');
+        e.target.classList.remove('armed'); io.unobserve(e.target);
+      });
+    }, { rootMargin: '0px 0px -8% 0px' });
+    var vh = window.innerHeight;
+    document.querySelectorAll('[data-reveal]').forEach(function (el, i) {
+      if (el.getBoundingClientRect().top > vh) {
+        el.classList.add('armed');
+        el.style.transitionDelay = ((i % 4) * 70) + 'ms';
+      } else { el.classList.add('in-view'); }
+      io.observe(el);
+    });
+  }
+
+  // hero canvas: payments stream into hub lanes; each hub settles an amber root to the Polygon line
+  var cv = document.getElementById('flow');
+  var ctx = cv.getContext && cv.getContext('2d');
+  if (!ctx) return;
+  var css = getComputedStyle(document.documentElement);
+  var cA = css.getPropertyValue('--hero-accent').trim() || '#8D97FF';
+  var cS = css.getPropertyValue('--hero-settle').trim() || '#FFB547';
+  var W = 0, H = 0, dpr = 1, lanes = [], parts = [], roots = [], ripples = [], hubX = 0, baseY = 0;
+  function rgba(hex, a) {
+    var h = hex.replace('#', ''); if (h.length === 3) h = h.split('').map(function (c) { return c + c; }).join('');
+    var n = parseInt(h, 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  function setup() {
+    var r = cv.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var n = W < 700 ? 6 : 10; lanes = [];
+    hubX = W * 0.86; baseY = H - 18;
+    for (var i = 0; i < n; i++) lanes.push({ y: H * 0.12 + (H * 0.68) * (i / (n - 1)), glow: 0, count: 0 });
+    var target = Math.round(Math.min(520, W / 2.4)); parts = [];
+    for (var j = 0; j < target; j++) parts.push(spawn(true));
+  }
+  function spawn(anywhere) {
+    var l = (Math.random() * lanes.length) | 0;
+    return { x: anywhere ? Math.random() * hubX : -10 - Math.random() * 80, y0: H * Math.random(), lane: l,
+             v: 2.2 + Math.random() * 3.6, s: 0.6 + Math.random() * 1.2 };
+  }
+  function frame(dt) {
+    ctx.clearRect(0, 0, W, H);
+    // lanes + hubs
+    for (var i = 0; i < lanes.length; i++) {
+      var L = lanes[i];
+      ctx.strokeStyle = rgba(cA, 0.06); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(W * 0.35, L.y); ctx.lineTo(hubX, L.y); ctx.stroke();
+      L.glow *= 0.9;
+      ctx.fillStyle = rgba(cA, 0.25 + Math.min(L.glow, 1) * 0.6);
+      ctx.beginPath(); ctx.arc(hubX, L.y, 3.2 + Math.min(L.glow, 1) * 2.4, 0, 6.283); ctx.fill();
+    }
+    // Polygon settlement line
+    ctx.strokeStyle = rgba(cS, 0.28); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W * 0.3, baseY); ctx.lineTo(W, baseY); ctx.stroke();
+    // payments
+    for (var p = 0; p < parts.length; p++) {
+      var P = parts[p], L2 = lanes[P.lane];
+      P.x += P.v * dt;
+      var t = Math.max(0, Math.min(1, (P.x - W * 0.25) / (hubX - W * 0.25)));
+      var e = t * t * (3 - 2 * t);
+      var y = P.y0 + (L2.y - P.y0) * e;
+      ctx.strokeStyle = rgba(cA, 0.18 + 0.5 * e);
+      ctx.lineWidth = P.s;
+      ctx.beginPath(); ctx.moveTo(P.x - P.v * 5, y); ctx.lineTo(P.x, y); ctx.stroke();
+      if (P.x >= hubX) {
+        L2.glow += 0.25; L2.count++;
+        if (L2.count >= 60) { L2.count = 0; roots.push({ x: hubX, y: L2.y, v: 0 }); }
+        parts[p] = spawn(false);
+      }
+    }
+    // roots falling to Polygon
+    for (var r = roots.length - 1; r >= 0; r--) {
+      var R = roots[r]; R.v += 0.18 * dt; R.y += R.v * dt;
+      ctx.fillStyle = cS; ctx.shadowColor = cS; ctx.shadowBlur = 12;
+      ctx.fillRect(R.x - 3.5, R.y - 3.5, 7, 7); ctx.shadowBlur = 0;
+      if (R.y >= baseY) { ripples.push({ x: R.x, r: 2, a: 0.8 }); roots.splice(r, 1); }
+    }
+    for (var q = ripples.length - 1; q >= 0; q--) {
+      var Q = ripples[q]; Q.r += 1.6 * dt; Q.a -= 0.018 * dt;
+      if (Q.a <= 0) { ripples.splice(q, 1); continue; }
+      ctx.strokeStyle = rgba(cS, Q.a); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.ellipse(Q.x, baseY, Q.r * 2.2, Q.r * 0.5, 0, 0, 6.283); ctx.stroke();
+    }
+  }
+  setup();
+  var last = performance.now(), raf = 0;
+  function loop(now) {
+    var dt = Math.min(3, (now - last) / 16.67); last = now;
+    frame(dt); raf = requestAnimationFrame(loop);
+  }
+  if (reduce) { for (var k = 0; k < 90; k++) frame(1); }
+  else raf = requestAnimationFrame(loop);
+  var rt;
+  window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { setup(); if (reduce) for (var k = 0; k < 90; k++) frame(1); }, 150); });
+  document.addEventListener('visibilitychange', function () {
+    if (reduce) return;
+    if (document.hidden) cancelAnimationFrame(raf); else { last = performance.now(); raf = requestAnimationFrame(loop); }
+  });
+})();
+</script>
+<!-- sources:
+Run: fleet run h41m (2026-10-08) archive: manifest.json, REPORT.md, series.csv, fleet/servers.json, fleet/prices.json. Plateau chart = fleet_durable_per_s scaled to 100 hubs (x100/hubs_reporting), t=10..595 s.
+Sui tunnels 40,614,180 TPS (2026-10-07): https://www.sui.io/blog/sui-sets-record-for-highest-verified-throughput-settled-to-a-blockchain ; https://www.cryptotimes.io/2026/10/07/sui-hits-40-6m-tps-in-basecamp-test-as-certik-reviews-results/ (CertiK report "in the coming days"; duration and hardware not stated; tunnels mutually co-signed, open+close on-chain).
+Solana payment channels (1M+ payments/s, escrow per channel, settle at close, hardware not stated): https://solana.com/news/payment-channels-1-million-payments-per-second ; https://solana.com/payment-channels ; https://github.com/solana-foundation/payment-channels
+Lightning (5.22M payments in Nov 2025; ~4,898 BTC public capacity, 41,080 channels, May 2026): https://www.spark.money/research/lightning-network-2026-state
+Chain TPS (live 1h, 2026-10-08: Solana 1.8K, Ethereum 22.27, Base 127, Arbitrum 19.22, Polygon 65.32): https://chainspect.app/dashboard
+World population 8.2B: UN World Population Prospects 2024.
+-->
+
+</body></html>
